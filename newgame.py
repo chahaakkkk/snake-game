@@ -3,11 +3,13 @@ import time
 import random
 
 delay=0.1
+score=0
+high_score=0
 
 #window setup
 wn=turtle.Screen()
 wn.title("Snake Game")
-wn.bgcolor("pink")
+wn.bgcolor("black")
 wn.setup(width=600, height=600)
 wn.tracer(0) #turns off screen updates
 
@@ -27,13 +29,17 @@ def move():
         head.setx(x+20)
 
 def go_up():
-    head.direction="up"
+    if head.direction!="down":
+        head.direction="up"
 def go_down():
-    head.direction="down"
+    if head.direction!="up":
+        head.direction="down"
 def go_left():
-    head.direction="left"
+    if head.direction!="right":
+        head.direction="left"
 def go_right():
-    head.direction="right"
+    if head.direction!="left":
+        head.direction="right"
 
 #keyboard bindings
 wn.listen()
@@ -55,12 +61,20 @@ head.direction="stop"
 #snake food
 food=turtle.Turtle()
 food.speed(0)
-food.shape("circle")
-food.color("green")
+food.shape("triangle")
+food.color("white")
 food.penup()
 food.goto(0,100)
 
 segment=[]
+
+#score
+pen=turtle.Turtle()
+pen.color("red")
+pen.penup()
+pen.hideturtle()
+pen.goto(0,260)
+pen.write("Score: 0  High Score: 0", align="center", font=("Courier", 24, "bold"))
 
 #main game loop
 while True:
@@ -72,6 +86,19 @@ while True:
         head.goto(0,0)
         head.direction="stop"
 
+        for i in  segment:
+            i.goto(1000,1000)
+        #clear segments
+        segment.clear()
+
+        #reset score
+        score=0
+        pen.clear()
+        pen.write("Score: {}  High Score: {}".format(score,high_score),align="center",font=("Courier",24,"bold"))
+
+        #reset delay
+        delay=0.1
+
     #check for collision with food
     if head.distance(food)<20:
         x=random.randint(-290,290)
@@ -82,9 +109,19 @@ while True:
         new_segment=turtle.Turtle()
         new_segment.speed(0)
         new_segment.shape("circle")
-        new_segment.color("white")
+        new_segment.color("pink")
         new_segment.penup()
         segment.append(new_segment)
+
+        delay=delay-0.001
+
+        #adding score
+        score=score+1
+        if score>high_score:
+            high_score=score
+        
+        pen.clear()
+        pen.write("Score: {}  High Score: {}".format(score,high_score),align="center",font=("Courier",24,"bold"))
 
     #move the end segments first in reverse order
     for i in range (len(segment)-1,0,-1):
@@ -92,13 +129,33 @@ while True:
         y=segment[i-1].ycor()
         segment[i].goto(x,y)
 
+
     #move segment 0 to where head is
     if len(segment)>0:
         x=head.xcor()
         y=head.ycor()
         segment[0].goto(x,y)
     move()
+    #check for collisions with head and bady
+    for i in segment:
+        if i.distance(head)<20:
+            time.sleep(1)
+            head.goto(0,0)
+            head.direction="stop"
 
+            for i in segment:
+                i.goto(1000,1000)
+            
+            segment.clear()
+
+            #reset score
+            score=0
+            pen.clear()
+            pen.write("Score: {}  High Score: {}".format(score,high_score),align="center",font=("Courier",24,"bold"))
+
+            #reset delay
+            delay=0.1
+            
     time.sleep(delay)
 
 wn.mainloop()
